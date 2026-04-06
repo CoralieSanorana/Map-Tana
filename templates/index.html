@@ -1,132 +1,255 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Estimation Terrain Tana</title>
+    <title>Map-Tana - Estimation de Terrains</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/leaflet.css') }}" />
-    
     <style>
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            margin: 20px; 
+            margin: 0;
+            padding: 20px; 
             background-color: #f4f7f6;
         }
 
-        h1 { color: #2c3e50; text-align: center; }
+        h1 { 
+            color: #2c3e50; 
+            text-align: center; 
+            margin-bottom: 20px;
+        }
 
-        /* Le conteneur doit avoir une hauteur définie (ex: 80% de l'écran) */
         .main-container {
             display: flex;
             gap: 20px;
-            height: 70vh; /* vh = viewport height, 70% de la hauteur de l'écran */
-            min-height: 500px;
+            height: 80vh;
+            min-height: 600px;
             background: white;
-            padding: 15px;
+            padding: 20px;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
 
-        /* La carte doit remplir tout son conteneur parent */
         #map { 
             flex: 2; 
-            height: 100% !important; 
+            height: 100%;
             border-radius: 8px;
             border: 1px solid #ddd;
-            z-index: 1; /* Assure que la carte reste sous les menus */
+            z-index: 1;
         }
 
-        #formulaire { 
+        #side-panel { 
             flex: 1; 
             padding: 20px; 
             background: #ffffff;
             border-radius: 8px;
             display: flex;
             flex-direction: column;
+            overflow-y: auto;
         }
 
-        label { font-weight: bold; margin-bottom: 5px; color: #34495e; }
-        select, button { 
-            padding: 12px; 
-            margin-bottom: 20px; 
+        .panel-state { display: none; }
+        .panel-state.active { display: block; }
+
+        label { 
+            font-weight: bold; 
+            margin-bottom: 5px; 
+            color: #34495e; 
+            display: block;
+            margin-top: 12px;
+        }
+
+        input, select { 
+            padding: 10px; 
+            margin-bottom: 12px; 
             border-radius: 6px; 
             border: 1px solid #dcdde1;
-            font-size: 16px;
+            font-size: 14px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .checkbox-container input[type="checkbox"] {
+            width: auto;
+            margin-right: 10px;
+            margin-bottom: 0;
         }
 
         button {
-            background-color: #2ecc71;
-            color: white;
+            padding: 12px;
+            border-radius: 6px;
             border: none;
             cursor: pointer;
             font-weight: bold;
-            transition: background 0.3s;
+            font-size: 14px;
+            transition: all 0.3s;
+            width: 100%;
+            margin-top: 10px;
         }
 
-        button:hover { background-color: #27ae60; }
+        .btn-primary { background-color: #2ecc71; color: white; }
+        .btn-primary:hover { background-color: #27ae60; }
+        .btn-secondary { background-color: #3498db; color: white; }
+        .btn-secondary:hover { background-color: #2980b9; }
+        .btn-warning { background-color: #f39c12; color: white; }
+        .btn-warning:hover { background-color: #e67e22; }
 
-        #result-box {
-            margin-top: auto;
+        .terrain-details {
+            background: #ecf0f1;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .terrain-details h4 {
+            margin-top: 0;
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #bdc3c7;
+        }
+
+        .detail-label { font-weight: bold; color: #7f8c8d; }
+        .detail-value { color: #2c3e50; }
+        .prix-proprio { font-size: 1.2em; color: #e74c3c; font-weight: bold; }
+
+        .result-box {
+            margin-top: 15px;
             padding: 15px;
             background: #ebf5fb;
             border-radius: 6px;
             border-left: 4px solid #3498db;
         }
 
-        .main-container {
-            display: flex;
-            gap: 20px;
-            /* On définit une hauteur basée sur l'écran (70% de la hauteur visible) */
-            height: 70vh; 
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            margin-top: 20px;
+        .prix-estime {
+            font-size: 1.5em;
+            color: #27ae60;
+            font-weight: bold;
+            margin: 10px 0;
         }
 
-        #map { 
-            flex: 2; /* La carte prend plus de place que le formulaire */
-            height: 100%; /* Elle remplit toute la hauteur du container */
-            border-radius: 8px;
-            border: 1px solid #ddd;
-            /* Très important pour que les contrôles (+/-) s'affichent au bon endroit */
-            z-index: 1; 
+        .instruction-box {
+            text-align: center;
+            color: #7f8c8d;
+            padding: 40px 20px;
         }
 
-        #formulaire { 
-            flex: 1; 
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
+        .instruction-box h3 { color: #3498db; margin-bottom: 15px; }
+
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+            display: none;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
-    <h1>Calculateur de prix de terrain (Antananarivo)</h1>
+    <h1>Map-Tana - Estimation de Prix de Terrains</h1>
 
     <div class="main-container">
         <div id="map"></div>
 
-        <div id="formulaire">
-            <h3>Caractéristiques du terrain</h3>
-            
-            <label>Accessibilité :</label>
-            <select id="access">
-                <option value="aucun">Aucun accès</option>
-                <option value="moto">Accès Moto</option>
-                <option value="voiture">Accès Voiture</option>
-            </select>
+        <div id="side-panel">
+            <!-- État 0: Instruction initiale -->
+            <div id="panel-instruction" class="panel-state active">
+                <div class="instruction-box">
+                    <h3>Bienvenue sur Map-Tana</h3>
+                    <p>Cliquez sur un emplacement de la carte pour :</p>
+                    <ul style="text-align: left; display: inline-block;">
+                        <li>Voir les détails d'un terrain existant</li>
+                        <li>Ajouter un nouveau terrain à vendre</li>
+                    </ul>
+                    <p style="margin-top: 20px; color: #95a5a6;">
+                        Les terrains existants sont affichés en rouge sur la carte.
+                    </p>
+                </div>
+            </div>
 
-            <label>Type de Papier :</label>
-            <select id="papier">
-                <option value="titre borne">Titre et Borné</option>
-                <option value="kadasitra">Kadasitra</option>
-                <option value="fifanolorana">Fifanolorana</option>
-            </select>
+            <!-- État 1: Formulaire d'ajout -->
+            <div id="panel-nouveau" class="panel-state">
+                <h3>Nouveau Terrain</h3>
+                <p style="color: #7f8c8d; font-size: 0.9em;">
+                    Position: <span id="new-coords"></span>
+                </p>
 
-            <button onclick="envoyerEstimation()">Estimer le prix</button>
-            
-            <div id="result-box" style="margin-top: 20px; padding: 10px; background: #e7f3fe; border-left: 5px solid #2196F3;">
-                <h4 id="resultat" style="margin: 0;">Prix : -- Ar/m²</h4>
+                <form id="form-nouveau">
+                    <label for="new-commune">Commune :</label>
+                    <input type="text" id="new-commune" required placeholder="Ex: Ivandry">
+
+                    <label for="new-access">Accessibilité :</label>
+                    <select id="new-access" required>
+                        <option value="aucun">Aucun accès</option>
+                        <option value="moto">Accès Moto</option>
+                        <option value="voiture">Accès Voiture</option>
+                    </select>
+
+                    <div class="checkbox-container">
+                        <input type="checkbox" id="new-batissable" checked>
+                        <label for="new-batissable" style="margin: 0;">Bâtissable</label>
+                    </div>
+
+                    <label for="new-dist-rn">Distance route nationale (m) :</label>
+                    <input type="number" id="new-dist-rn" min="0" step="0.1" placeholder="Ex: 150">
+
+                    <label for="new-dist-rp">Distance route principale (m) :</label>
+                    <input type="number" id="new-dist-rp" min="0" step="0.1" placeholder="Ex: 50">
+
+                    <label for="new-dist-jir">Distance poteau JIRAMA (m) :</label>
+                    <input type="number" id="new-dist-jir" min="0" step="0.1" placeholder="Ex: 30">
+
+                    <label for="new-papier">Type de Papier :</label>
+                    <select id="new-papier" required>
+                        <option value="titre_borne">Titre et Borné</option>
+                        <option value="kadasitra">Kadasitra</option>
+                        <option value="fanolorana">Fanolorana</option>
+                    </select>
+
+                    <label for="new-prix">Prix demandé (Ar/m²) :</label>
+                    <input type="number" id="new-prix" min="0" step="1000" required placeholder="Ex: 150000">
+
+                    <button type="submit" class="btn-primary">Enregistrer le terrain</button>
+                    <button type="button" class="btn-secondary" onclick="resetPanel()">Annuler</button>
+                </form>
+
+                <div class="loader" id="loader-nouveau"></div>
+            </div>
+
+            <!-- État 2: Terrain existant -->
+            <div id="panel-existant" class="panel-state">
+                <h3>Terrain Enregistré</h3>
+                
+                <div class="terrain-details" id="details-terrain"></div>
+
+                <button class="btn-warning" onclick="estimerPrix()">Estimer le prix</button>
+                <button class="btn-secondary" onclick="resetPanel()">Fermer</button>
+
+                <div class="result-box" id="result-estimation" style="display: none;">
+                    <h4>Prix Estimatif :</h4>
+                    <div class="prix-estime" id="prix-estime-value">-- Ar/m²</div>
+                    <small style="color: #7f8c8d;">Basé sur l'analyse des caractéristiques</small>
+                </div>
+
+                <div class="loader" id="loader-estimation"></div>
             </div>
         </div>
     </div>
@@ -134,47 +257,138 @@
     <script src="{{ url_for('static', filename='js/leaflet.js') }}"></script>
 
     <script>
-        // 1. Initialisation de la carte
-        var map = L.map('map').setView([-18.8792, 47.5079], 13);
+        let map, currentMarker = null, selectedCoords = null, currentTerrainId = null, allTerrains = [];
 
-        // 2. Fond de carte (CartoDB est plus léger pour le dev)
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-            attribution: '© OpenStreetMap'
-        }).addTo(map);
+        document.addEventListener('DOMContentLoaded', function() {
+            initMap();
+            loadTerrains();
+        });
 
-        // 3. Gestion du clic et du Popup
-        var popup = L.popup();
-
-        function onMapClick(e) {
-            popup
-                .setLatLng(e.latlng)
-                .setContent("Terrain sélectionné aux coordonnées :<br>" + e.latlng.lat.toFixed(5) + " , " + e.latlng.lng.toFixed(5))
-                .openOn(map);
-            
-            console.log("Coordonnées cliquées : ", e.latlng);
+        function initMap() {
+            map = L.map('map').setView([-18.8792, 47.5079], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+            map.on('click', onMapClick);
         }
 
-        map.on('click', onMapClick);
+        async function loadTerrains() {
+            try {
+                const response = await fetch('/api/terrains');
+                allTerrains = await response.json();
+                allTerrains.forEach(t => addTerrainMarker(t));
+                console.log(`${allTerrains.length} terrains chargés`);
+            } catch (e) { console.error('Erreur chargement:', e); }
+        }
 
-        // 4. Fonction pour envoyer les données au Backend Python
-        function envoyerEstimation() {
+        function addTerrainMarker(terrain) {
+            const marker = L.circleMarker([terrain.latitude, terrain.longitude], {
+                radius: 10, fillColor: '#e74c3c', color: '#c0392b', weight: 2, opacity: 1, fillOpacity: 0.8
+            }).addTo(map);
+
+            marker.bindPopup(`<b>${terrain.commune}</b><br>${terrain.accessibilite} | ${terrain.type_papier}<br><b>${terrain.prix_proprietaire?.toLocaleString()} Ar/m²</b>`);
+
+            marker.on('click', (e) => {
+                L.DomEvent.stopPropagation(e);
+                showTerrainExistant(terrain);
+            });
+        }
+
+        async function onMapClick(e) {
+            const lat = e.latlng.lat, lng = e.latlng.lng;
+            selectedCoords = { lat, lng };
+            if (currentMarker) map.removeLayer(currentMarker);
+            currentMarker = L.marker([lat, lng]).addTo(map);
+
+            try {
+                const res = await fetch(`/api/terrain/near?lat=${lat}&lon=${lng}&radius=50`);
+                const result = await res.json();
+                result.found ? showTerrainExistant(result.terrain) : showFormulaireNouveau(lat, lng);
+            } catch (e) {
+                console.error(e);
+                alert('Erreur lors de la recherche');
+            }
+        }
+
+        function showPanel(id) {
+            document.querySelectorAll('.panel-state').forEach(p => p.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        function resetPanel() {
+            showPanel('panel-instruction');
+            if (currentMarker) { map.removeLayer(currentMarker); currentMarker = null; }
+            selectedCoords = null; currentTerrainId = null;
+            document.getElementById('result-estimation').style.display = 'none';
+        }
+
+        function showFormulaireNouveau(lat, lng) {
+            document.getElementById('new-coords').textContent = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+            showPanel('panel-nouveau');
+        }
+
+        function showTerrainExistant(t) {
+            currentTerrainId = t.id;
+            document.getElementById('details-terrain').innerHTML = `
+                <h4>${t.commune}</h4>
+                <div class="detail-row"><span class="detail-label">Accessibilité :</span><span class="detail-value">${t.accessibilite}</span></div>
+                <div class="detail-row"><span class="detail-label">Bâtissable :</span><span class="detail-value">${t.is_batissable ? 'Oui' : 'Non'}</span></div>
+                <div class="detail-row"><span class="detail-label">Route nationale :</span><span class="detail-value">${t.distance_route_nationale?.toFixed(1) || 'N/A'} m</span></div>
+                <div class="detail-row"><span class="detail-label">Route principale :</span><span class="detail-value">${t.distance_route_principale?.toFixed(1) || 'N/A'} m</span></div>
+                <div class="detail-row"><span class="detail-label">Poteau JIRAMA :</span><span class="detail-value">${t.distance_jirama?.toFixed(1) || 'N/A'} m</span></div>
+                <div class="detail-row"><span class="detail-label">Type de papier :</span><span class="detail-value">${t.type_papier}</span></div>
+                <div class="detail-row"><span class="detail-label">Prix demandé :</span><span class="detail-value prix-proprio">${t.prix_proprietaire?.toLocaleString() || 'N/A'} Ar/m²</span></div>
+                <div class="detail-row"><span class="detail-label">Coordonnées :</span><span class="detail-value">${t.latitude.toFixed(5)}, ${t.longitude.toFixed(5)}</span></div>
+            `;
+            document.getElementById('result-estimation').style.display = 'none';
+            showPanel('panel-existant');
+        }
+
+        document.getElementById('form-nouveau').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            if (!selectedCoords) return alert('Erreur: Coordonnées non définies');
+
             const data = {
-                accessibilite: document.getElementById('access').value,
-                papier: document.getElementById('papier').value
+                commune: document.getElementById('new-commune').value,
+                accessibilite: document.getElementById('new-access').value,
+                is_batissable: document.getElementById('new-batissable').checked,
+                distance_route_nationale: parseFloat(document.getElementById('new-dist-rn').value) || null,
+                distance_route_principale: parseFloat(document.getElementById('new-dist-rp').value) || null,
+                distance_jirama: parseFloat(document.getElementById('new-dist-jir').value) || null,
+                type_papier: document.getElementById('new-papier').value,
+                prix_proprietaire: parseFloat(document.getElementById('new-prix').value),
+                latitude: selectedCoords.lat, longitude: selectedCoords.lng
             };
 
-            fetch('/estimer', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(data)
-            })
-            .then(res => res.json())
-            .then(res => {
-                document.getElementById('resultat').innerText = "Prix estimé : " + res.prix_estime.toLocaleString() + " Ar/m²";
-            })
-            .catch(err => {
-                alert("Erreur : Lance ton serveur app.py pour que l'estimation fonctionne !");
-            });
+            document.getElementById('loader-nouveau').style.display = 'block';
+            try {
+                const res = await fetch('/api/terrain', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+                const result = await res.json();
+                if (result.success) {
+                    alert('Terrain enregistré !');
+                    addTerrainMarker(result.terrain);
+                    allTerrains.push(result.terrain);
+                    document.getElementById('form-nouveau').reset();
+                    resetPanel();
+                } else alert('Erreur: ' + result.error);
+            } catch (e) { console.error(e); alert('Erreur lors de l\'enregistrement'); }
+            finally { document.getElementById('loader-nouveau').style.display = 'none'; }
+        });
+
+        async function estimerPrix() {
+            if (!currentTerrainId) return alert('Aucun terrain sélectionné');
+            document.getElementById('loader-estimation').style.display = 'block';
+            document.getElementById('result-estimation').style.display = 'none';
+
+            try {
+                const res = await fetch('/api/estimer', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ terrain_id: currentTerrainId }) });
+                const result = await res.json();
+                if (result.success) {
+                    document.getElementById('prix-estime-value').textContent = result.prix_estime.toLocaleString() + ' Ar/m²';
+                    document.getElementById('result-estimation').style.display = 'block';
+                } else alert('Erreur: ' + result.error);
+            } catch (e) { console.error(e); alert('Erreur lors de l\'estimation'); }
+            finally { document.getElementById('loader-estimation').style.display = 'none'; }
         }
     </script>
 </body>

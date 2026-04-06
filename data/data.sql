@@ -1,0 +1,1 @@
+create database map_tana;

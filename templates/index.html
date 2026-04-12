@@ -2,75 +2,172 @@
 <html>
 <head>
     <title>Map-Tana - Estimation de Terrains</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/leaflet.css') }}" />
     <style>
-        body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            margin: 0;
-            padding: 20px; 
-            background-color: #f4f7f6;
+        :root {
+            --bg-main: #f6f4ef;
+            --bg-panel: #fffdfa;
+            --bg-accent: #0f766e;
+            --bg-accent-dark: #115e59;
+            --bg-soft: #e8f4f2;
+            --text-main: #1f2937;
+            --text-muted: #4b5563;
+            --danger: #b91c1c;
+            --shadow: 0 20px 45px rgba(15, 118, 110, 0.14);
+            --radius-xl: 20px;
+            --radius-lg: 14px;
         }
 
-        h1 { 
-            color: #2c3e50; 
-            text-align: center; 
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            margin: 0;
+            padding: 22px;
+            color: var(--text-main);
+            background:
+                radial-gradient(circle at 8% 8%, #d0f4ea 0%, transparent 42%),
+                radial-gradient(circle at 92% 22%, #ffecc7 0%, transparent 45%),
+                var(--bg-main);
+        }
+
+        h1 {
+            font-family: 'Sora', sans-serif;
+            letter-spacing: -0.02em;
+            color: #0f172a;
+            text-align: center;
+            margin: 0 0 18px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: var(--text-muted);
             margin-bottom: 20px;
         }
 
         .main-container {
             display: flex;
-            gap: 20px;
-            height: 80vh;
-            min-height: 600px;
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            gap: 18px;
+            height: 82vh;
+            min-height: 640px;
+            background: linear-gradient(120deg, #fff 0%, #f8fcfb 100%);
+            padding: 16px;
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow);
         }
 
-        #map { 
-            flex: 2; 
+        #map {
+            flex: 2.2;
             height: 100%;
-            border-radius: 8px;
-            border: 1px solid #ddd;
+            border-radius: var(--radius-lg);
+            border: 1px solid #d8e5e3;
             z-index: 1;
         }
 
-        #side-panel { 
-            flex: 1; 
-            padding: 20px; 
-            background: #ffffff;
-            border-radius: 8px;
+        #side-panel {
+            flex: 1;
+            padding: 18px;
+            background: var(--bg-panel);
+            border-radius: var(--radius-lg);
             display: flex;
             flex-direction: column;
             overflow-y: auto;
+            border: 1px solid #e5eeec;
+        }
+
+        .quick-estimator {
+            background: var(--bg-soft);
+            border: 1px solid #b8d9d3;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 14px;
+        }
+
+        .quick-estimator h3 {
+            margin: 0 0 8px;
+            color: #0f766e;
+            font-size: 1.02rem;
+        }
+
+        .map-controls {
+            background: #fff;
+            border: 1px solid #cfe0dd;
+            border-radius: 12px;
+            padding: 10px;
+            margin-bottom: 12px;
+        }
+
+        .map-controls h3 {
+            margin: 0 0 8px;
+            color: #14532d;
+            font-size: 1rem;
+        }
+
+        .legend-box {
+            margin-top: 10px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 6px;
+            font-size: 0.82rem;
+            color: #334155;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 999px;
+            border: 1px solid #fff;
+            box-shadow: 0 0 0 1px #cbd5e1;
+        }
+
+        .small-help {
+            font-size: 0.78rem;
+            color: #64748b;
+            margin-top: -2px;
+            margin-bottom: 6px;
         }
 
         .panel-state { display: none; }
         .panel-state.active { display: block; }
 
-        label { 
-            font-weight: bold; 
-            margin-bottom: 5px; 
-            color: #34495e; 
+        label {
+            font-weight: 700;
+            margin-bottom: 4px;
+            color: #1f2937;
             display: block;
-            margin-top: 12px;
+            margin-top: 10px;
+            font-size: 0.92rem;
         }
 
-        input, select { 
-            padding: 10px; 
-            margin-bottom: 12px; 
-            border-radius: 6px; 
-            border: 1px solid #dcdde1;
+        input, select {
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            border: 1px solid #cfe0dd;
             font-size: 14px;
             width: 100%;
-            box-sizing: border-box;
+            background: #fff;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
         }
 
         .checkbox-container {
             display: flex;
             align-items: center;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
         }
 
         .checkbox-container input[type="checkbox"] {
@@ -80,81 +177,148 @@
         }
 
         button {
-            padding: 12px;
-            border-radius: 6px;
+            padding: 11px;
+            border-radius: 10px;
             border: none;
             cursor: pointer;
-            font-weight: bold;
+            font-weight: 700;
             font-size: 14px;
-            transition: all 0.3s;
+            transition: transform 0.18s ease, filter 0.22s ease;
             width: 100%;
-            margin-top: 10px;
+            margin-top: 8px;
         }
 
-        .btn-primary { background-color: #2ecc71; color: white; }
-        .btn-primary:hover { background-color: #27ae60; }
-        .btn-secondary { background-color: #3498db; color: white; }
-        .btn-secondary:hover { background-color: #2980b9; }
-        .btn-warning { background-color: #f39c12; color: white; }
-        .btn-warning:hover { background-color: #e67e22; }
+        button:hover { transform: translateY(-1px); filter: saturate(1.03); }
+
+        .btn-primary { background-color: var(--bg-accent); color: #fff; }
+        .btn-primary:hover { background-color: var(--bg-accent-dark); }
+        .btn-secondary { background-color: #1d4ed8; color: #fff; }
+        .btn-secondary:hover { background-color: #1e40af; }
+        .btn-warning { background-color: #c2410c; color: #fff; }
+        .btn-warning:hover { background-color: #9a3412; }
 
         .terrain-details {
-            background: #ecf0f1;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
+            background: #f5fbfa;
+            padding: 14px;
+            border-radius: 10px;
+            margin-bottom: 13px;
+            border: 1px solid #d9eae6;
         }
 
         .terrain-details h4 {
             margin-top: 0;
-            color: #2c3e50;
-            border-bottom: 2px solid #3498db;
-            padding-bottom: 10px;
+            color: #0f172a;
+            border-bottom: 2px solid #99d4ca;
+            padding-bottom: 9px;
         }
 
         .detail-row {
             display: flex;
             justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid #bdc3c7;
+            gap: 14px;
+            padding: 7px 0;
+            border-bottom: 1px solid #dce8e5;
+            font-size: 0.92rem;
         }
 
-        .detail-label { font-weight: bold; color: #7f8c8d; }
-        .detail-value { color: #2c3e50; }
-        .prix-proprio { font-size: 1.2em; color: #e74c3c; font-weight: bold; }
+        .detail-label { font-weight: 700; color: #475569; }
+        .detail-value { color: #0f172a; text-align: right; }
+        .prix-proprio { font-size: 1.05em; color: var(--danger); font-weight: 800; }
 
         .result-box {
-            margin-top: 15px;
-            padding: 15px;
-            background: #ebf5fb;
-            border-radius: 6px;
-            border-left: 4px solid #3498db;
+            margin-top: 12px;
+            padding: 14px;
+            background: #ebf8f5;
+            border-radius: 10px;
+            border-left: 5px solid var(--bg-accent);
         }
 
         .prix-estime {
-            font-size: 1.5em;
-            color: #27ae60;
-            font-weight: bold;
-            margin: 10px 0;
+            font-size: 1.35em;
+            color: #0f766e;
+            font-weight: 800;
+            margin: 8px 0;
         }
 
         .instruction-box {
             text-align: center;
-            color: #7f8c8d;
-            padding: 40px 20px;
+            color: var(--text-muted);
+            padding: 28px 16px;
         }
 
-        .instruction-box h3 { color: #3498db; margin-bottom: 15px; }
+        .instruction-box h3 {
+            color: #0f766e;
+            margin-bottom: 12px;
+        }
 
         .loader {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #3498db;
+            border: 3px solid #ebf1ef;
+            border-top: 3px solid var(--bg-accent);
             border-radius: 50%;
-            width: 30px;
-            height: 30px;
+            width: 28px;
+            height: 28px;
             animation: spin 1s linear infinite;
-            margin: 20px auto;
+            margin: 16px auto;
             display: none;
+        }
+
+        .map-add-fab {
+            position: absolute;
+            right: 24px;
+            bottom: 24px;
+            z-index: 1200;
+            width: auto;
+            padding: 10px 14px;
+            border-radius: 999px;
+            box-shadow: 0 8px 20px rgba(15, 118, 110, 0.25);
+        }
+
+        .map-add-fab.active {
+            background: #15803d;
+        }
+
+        .add-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.45);
+            z-index: 1600;
+            padding: 24px;
+            overflow-y: auto;
+        }
+
+        .add-modal.active {
+            display: block;
+        }
+
+        .add-modal-card {
+            max-width: 580px;
+            margin: 24px auto;
+            background: #fff;
+            border-radius: 14px;
+            padding: 16px;
+            box-shadow: 0 14px 40px rgba(2, 6, 23, 0.28);
+        }
+
+        .auto-badge {
+            display: inline-block;
+            background: #dcfce7;
+            color: #166534;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 0.74rem;
+            font-weight: 700;
+            margin-left: 6px;
+        }
+
+        @media (max-width: 1024px) {
+            body { padding: 12px; }
+            .main-container {
+                flex-direction: column;
+                height: auto;
+                min-height: initial;
+            }
+            #map { min-height: 54vh; }
         }
 
         @keyframes spin {
@@ -164,12 +328,101 @@
     </style>
 </head>
 <body>
-    <h1>Map-Tana - Estimation de Prix de Terrains</h1>
+    <h1>Map-Tana - Analyse Immobiliere Antananarivo</h1>
+    <p class="subtitle">Recherche par quartier, criteres de terrain/logement et estimation intelligente basee sur comparables.</p>
 
     <div class="main-container">
         <div id="map"></div>
+        <button id="btn-add-mode" class="btn-primary map-add-fab" type="button">Ajouter un immobilier</button>
 
         <div id="side-panel">
+            <div class="map-controls">
+                <h3>Navigation quartier</h3>
+                <label for="map-zones-mode">Type de zonage</label>
+                <select id="map-zones-mode">
+                    <option value="quartiers_tana.geojson" selected>Tana etendu (recommande)</option>
+                    <option value="quartiers_tana_ville.geojson">Tana ville stricte (1er-6e arr.)</option>
+                    <option value="quartiers_tana_full.geojson">Complet officiel (plus lourd)</option>
+                </select>
+                <label for="map-quartier-select">Choisir un quartier</label>
+                <input id="map-quartier-search" type="text" placeholder="Rechercher un quartier..." />
+                <div class="small-help" id="map-quartier-count">0 quartier(s)</div>
+                <select id="map-quartier-select">
+                    <option value="">-- Selectionner --</option>
+                </select>
+                <button type="button" class="btn-secondary" id="btn-reset-map">Reinitialiser vue carte</button>
+
+                <div class="legend-box">
+                    <div class="legend-item"><span class="dot" style="background:#16a34a;"></span>Prix moyen faible</div>
+                    <div class="legend-item"><span class="dot" style="background:#f59e0b;"></span>Prix moyen intermediaire</div>
+                    <div class="legend-item"><span class="dot" style="background:#dc2626;"></span>Prix moyen eleve</div>
+                </div>
+            </div>
+
+            <div class="quick-estimator">
+                <h3>Estimation Rapide par Criteres</h3>
+                <form id="form-criteres">
+                    <label for="crit-quartier">Quartier / Commune</label>
+                    <input id="crit-quartier" list="quartiers-list" placeholder="Ex: Ambatobe, Ivandry" />
+                    <datalist id="quartiers-list"></datalist>
+
+                    <div class="grid-2">
+                        <div>
+                            <label for="crit-type">Type de bien</label>
+                            <select id="crit-type">
+                                <option value="terrain">Terrain</option>
+                                <option value="maison">Maison</option>
+                                <option value="appartement">Appartement</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="crit-surface">Surface (m2)</label>
+                            <input type="number" id="crit-surface" min="1" step="0.1" placeholder="Ex: 250" />
+                        </div>
+                    </div>
+
+                    <div class="grid-2">
+                        <div>
+                            <label for="crit-access">Accessibilite</label>
+                            <select id="crit-access">
+                                <option value="aucun">Aucun</option>
+                                <option value="moto">Moto</option>
+                                <option value="voiture" selected>Voiture</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="crit-papier">Type papier</label>
+                            <select id="crit-papier">
+                                <option value="titre_borne">Titre et borne</option>
+                                <option value="kadasitra">Kadasitra</option>
+                                <option value="fanolorana">Fanolorana</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid-2">
+                        <div>
+                            <label for="crit-dist-rn">Dist. RN (m)</label>
+                            <input type="number" id="crit-dist-rn" min="0" step="0.1" placeholder="120" />
+                        </div>
+                        <div>
+                            <label for="crit-dist-rp">Dist. route (m)</label>
+                            <input type="number" id="crit-dist-rp" min="0" step="0.1" placeholder="60" />
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-primary">Estimer ce bien</button>
+                </form>
+                <div class="result-box" id="result-criteres" style="display: none;">
+                    <h4 style="margin: 0 0 8px;">Resultat estimation</h4>
+                    <div class="prix-estime" id="prix-criteres-m2">-- Ar/m2</div>
+                    <div class="detail-row" style="border-bottom: none; padding-top: 4px;">
+                        <span class="detail-label">Total estime</span>
+                        <span class="detail-value" id="prix-criteres-total">-- Ar</span>
+                    </div>
+                </div>
+            </div>
+
             <!-- État 0: Instruction initiale -->
             <div id="panel-instruction" class="panel-state active">
                 <div class="instruction-box">
@@ -195,6 +448,24 @@
                 <form id="form-nouveau">
                     <label for="new-commune">Commune :</label>
                     <input type="text" id="new-commune" required placeholder="Ex: Ivandry">
+
+                    <label for="new-quartier">Quartier :</label>
+                    <input type="text" id="new-quartier" list="quartiers-list" placeholder="Ex: Ambatobe">
+
+                    <div class="grid-2">
+                        <div>
+                            <label for="new-type">Type de bien :</label>
+                            <select id="new-type" required>
+                                <option value="terrain">Terrain</option>
+                                <option value="maison">Maison</option>
+                                <option value="appartement">Appartement</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="new-surface">Surface (m2) :</label>
+                            <input type="number" id="new-surface" min="1" step="0.1" placeholder="Ex: 400">
+                        </div>
+                    </div>
 
                     <label for="new-access">Accessibilité :</label>
                     <select id="new-access" required>
@@ -227,6 +498,9 @@
                     <label for="new-prix">Prix demandé (Ar/m²) :</label>
                     <input type="number" id="new-prix" min="0" step="1000" required placeholder="Ex: 150000">
 
+                    <label for="new-prix-total">Prix total (Ar) :</label>
+                    <input type="number" id="new-prix-total" min="0" step="1000" placeholder="Optionnel si connu">
+
                     <button type="submit" class="btn-primary">Enregistrer le terrain</button>
                     <button type="button" class="btn-secondary" onclick="resetPanel()">Annuler</button>
                 </form>
@@ -245,7 +519,11 @@
 
                 <div class="result-box" id="result-estimation" style="display: none;">
                     <h4>Prix Estimatif :</h4>
-                    <div class="prix-estime" id="prix-estime-value">-- Ar/m²</div>
+                    <div class="prix-estime" id="prix-estime-value">-- Ar/m2</div>
+                    <div class="detail-row" style="border-bottom: none;">
+                        <span class="detail-label">Estimation totale :</span>
+                        <span class="detail-value" id="prix-estime-total">-- Ar</span>
+                    </div>
                     <small style="color: #7f8c8d;">Basé sur l'analyse des caractéristiques</small>
                 </div>
 
@@ -254,21 +532,214 @@
         </div>
     </div>
 
+    <div id="add-modal" class="add-modal">
+        <div class="add-modal-card">
+            <h3 style="margin-top: 0;">Nouveau bien immobilier</h3>
+            <p style="color:#64748b; margin-top:4px;">Cliquez sur la carte pour positionner le bien. Quartier et distances routes se remplissent automatiquement.</p>
+            <p style="color: #7f8c8d; font-size: 0.9em;">
+                Position: <span id="new-coords-modal">--</span>
+            </p>
+
+            <form id="form-nouveau-modal">
+                <label for="new-commune-modal">Commune :</label>
+                <input type="text" id="new-commune-modal" required placeholder="Ex: Antananarivo">
+
+                <label for="new-quartier-modal">Quartier : <span class="auto-badge">Auto</span></label>
+                <input type="text" id="new-quartier-modal" list="quartiers-list" placeholder="Ex: Ambatobe">
+
+                <div class="grid-2">
+                    <div>
+                        <label for="new-type-modal">Type de bien :</label>
+                        <select id="new-type-modal" required>
+                            <option value="terrain">Terrain</option>
+                            <option value="maison">Maison</option>
+                            <option value="appartement">Appartement</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="new-surface-modal">Surface (m2) :</label>
+                        <input type="number" id="new-surface-modal" min="1" step="0.1" placeholder="Ex: 400">
+                    </div>
+                </div>
+
+                <label for="new-access-modal">Accessibilité :</label>
+                <select id="new-access-modal" required>
+                    <option value="aucun">Aucun accès</option>
+                    <option value="moto">Accès Moto</option>
+                    <option value="voiture">Accès Voiture</option>
+                </select>
+
+                <div class="checkbox-container">
+                    <input type="checkbox" id="new-batissable-modal" checked>
+                    <label for="new-batissable-modal" style="margin: 0;">Bâtissable</label>
+                </div>
+
+                <div class="grid-2">
+                    <div>
+                        <label for="new-dist-rn-modal">Distance route nationale (m) : <span class="auto-badge">Auto</span></label>
+                        <input type="number" id="new-dist-rn-modal" min="0" step="0.1" placeholder="Ex: 150">
+                    </div>
+                    <div>
+                        <label for="new-dist-rp-modal">Distance route principale (m) : <span class="auto-badge">Auto</span></label>
+                        <input type="number" id="new-dist-rp-modal" min="0" step="0.1" placeholder="Ex: 50">
+                    </div>
+                </div>
+
+                <label for="new-dist-jir-modal">Distance poteau JIRAMA (m) :</label>
+                <input type="number" id="new-dist-jir-modal" min="0" step="0.1" placeholder="Ex: 30">
+
+                <label for="new-papier-modal">Type de Papier :</label>
+                <select id="new-papier-modal" required>
+                    <option value="titre_borne">Titre et Borné</option>
+                    <option value="kadasitra">Kadasitra</option>
+                    <option value="fanolorana">Fanolorana</option>
+                </select>
+
+                <div class="grid-2">
+                    <div>
+                        <label for="new-prix-modal">Prix demandé (Ar/m²) :</label>
+                        <input type="number" id="new-prix-modal" min="0" step="1000" required placeholder="Ex: 150000">
+                    </div>
+                    <div>
+                        <label for="new-prix-total-modal">Prix total (Ar) :</label>
+                        <input type="number" id="new-prix-total-modal" min="0" step="1000" placeholder="Optionnel si connu">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary">Enregistrer</button>
+                <button type="button" class="btn-secondary" id="btn-cancel-add">Annuler</button>
+            </form>
+            <div class="loader" id="loader-nouveau-modal"></div>
+        </div>
+    </div>
+
     <script src="{{ url_for('static', filename='js/leaflet.js') }}"></script>
 
     <script>
-        let map, currentMarker = null, selectedCoords = null, currentTerrainId = null, allTerrains = [];
+        let map, currentMarker = null, currentQuartierFocus = null, selectedCoords = null, currentTerrainId = null, allTerrains = [];
+        let addMode = false;
+        let terrainLayer, quartierLayer, quartierPolygonLayer;
+        const terrainMarkers = [];
+        let quartiersStats = [];
+        let polygonsLoaded = false;
+        let currentGeoJsonFile = 'quartiers_tana.geojson';
+        const polygonIndexByName = new Map();
+        let selectedPolygonLayer = null;
+        let allQuartierOptions = [];
+
+        const polygonDefaultStyle = {
+            color: '#0f766e',
+            weight: 2,
+            fillColor: '#99f6e4',
+            fillOpacity: 0.18
+        };
+
+        const polygonSelectedStyle = {
+            color: '#15803d',
+            weight: 3,
+            fillColor: '#22c55e',
+            fillOpacity: 0.38
+        };
 
         document.addEventListener('DOMContentLoaded', function() {
             initMap();
             loadTerrains();
+            loadQuartiers();
+            bindMapControls();
         });
+
+        function bindMapControls() {
+            document.getElementById('btn-add-mode').addEventListener('click', function() {
+                addMode = !addMode;
+                this.classList.toggle('active', addMode);
+                this.textContent = addMode ? 'Mode ajout actif' : 'Ajouter un immobilier';
+                if (addMode) {
+                    alert('Mode ajout activé: cliquez sur la carte pour placer le bien.');
+                }
+            });
+
+            document.getElementById('btn-cancel-add').addEventListener('click', function() {
+                closeAddModal();
+            });
+
+            document.getElementById('map-zones-mode').addEventListener('change', async function() {
+                currentGeoJsonFile = this.value;
+                await loadQuartierPolygons();
+                await loadQuartiers();
+            });
+
+            document.getElementById('map-quartier-search').addEventListener('input', function() {
+                applyQuartierFilter(this.value || '');
+            });
+
+            document.getElementById('map-quartier-select').addEventListener('change', function() {
+                const quartier = this.value;
+                if (!quartier) return;
+                zoomToQuartier(quartier, true);
+            });
+
+            document.getElementById('btn-reset-map').addEventListener('click', function() {
+                currentQuartierFocus = null;
+                setMarkerHighlightByQuartier(null);
+                setSelectedPolygon(null);
+                map.setView([-18.8792, 47.5079], 13);
+            });
+        }
+
+        async function loadQuartiers() {
+            try {
+                const response = await fetch('/api/quartiers');
+                const quartiers = await response.json();
+                const list = document.getElementById('quartiers-list');
+                allQuartierOptions = Array.from(new Set(quartiers)).sort((a, b) => a.localeCompare(b));
+                list.innerHTML = '';
+                allQuartierOptions.forEach(q => {
+                    const option = document.createElement('option');
+                    option.value = q;
+                    list.appendChild(option);
+                });
+                applyQuartierFilter(document.getElementById('map-quartier-search').value || '');
+            } catch (e) {
+                console.error('Erreur chargement quartiers:', e);
+            }
+        }
+
+        function applyQuartierFilter(query) {
+            const select = document.getElementById('map-quartier-select');
+            const counter = document.getElementById('map-quartier-count');
+            const prev = select.value;
+            const q = (query || '').trim().toLowerCase();
+            const filtered = allQuartierOptions.filter(name => !q || name.toLowerCase().includes(q));
+
+            select.innerHTML = '<option value="">-- Selectionner --</option>';
+            filtered.forEach(name => {
+                const opt = document.createElement('option');
+                opt.value = name;
+                opt.textContent = name;
+                select.appendChild(opt);
+            });
+
+            if (filtered.includes(prev)) {
+                select.value = prev;
+            }
+            counter.textContent = `${filtered.length} quartier(s)`;
+        }
 
         function initMap() {
             map = L.map('map').setView([-18.8792, 47.5079], 13);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap contributors'
             }).addTo(map);
+
+            // Force a visual stacking where vente markers stay clickable above quartier polygons.
+            map.createPane('quartiersPane');
+            map.getPane('quartiersPane').style.zIndex = 360;
+            map.createPane('terrainPointsPane');
+            map.getPane('terrainPointsPane').style.zIndex = 520;
+
+            terrainLayer = L.layerGroup().addTo(map);
+            quartierLayer = L.layerGroup().addTo(map);
+            quartierPolygonLayer = L.layerGroup().addTo(map);
             map.on('click', onMapClick);
         }
 
@@ -276,22 +747,225 @@
             try {
                 const response = await fetch('/api/terrains');
                 allTerrains = await response.json();
+                terrainLayer.clearLayers();
+                terrainMarkers.length = 0;
                 allTerrains.forEach(t => addTerrainMarker(t));
+                await loadQuartiersStats();
                 console.log(`${allTerrains.length} terrains chargés`);
             } catch (e) { console.error('Erreur chargement:', e); }
         }
 
-        function addTerrainMarker(terrain) {
-            const marker = L.circleMarker([terrain.latitude, terrain.longitude], {
-                radius: 10, fillColor: '#e74c3c', color: '#c0392b', weight: 2, opacity: 1, fillOpacity: 0.8
-            }).addTo(map);
+        async function loadQuartiersStats() {
+            try {
+                const response = await fetch('/api/quartiers/stats');
+                quartiersStats = await response.json();
+                drawQuartiersLayer();
+                await loadQuartierPolygons();
+            } catch (e) {
+                console.error('Erreur stats quartiers:', e);
+            }
+        }
 
-            marker.bindPopup(`<b>${terrain.commune}</b><br>${terrain.accessibilite} | ${terrain.type_papier}<br><b>${terrain.prix_proprietaire?.toLocaleString()} Ar/m²</b>`);
+        async function loadQuartierPolygons() {
+            try {
+                const response = await fetch(`/static/data/${currentGeoJsonFile}`);
+                if (!response.ok) {
+                    polygonsLoaded = false;
+                    polygonIndexByName.clear();
+                    quartierPolygonLayer.clearLayers();
+                    drawQuartiersLayer();
+                    return;
+                }
+                const geojson = await response.json();
+
+                quartierPolygonLayer.clearLayers();
+                polygonIndexByName.clear();
+                selectedPolygonLayer = null;
+                const layer = L.geoJSON(geojson, {
+                    pane: 'quartiersPane',
+                    style: polygonDefaultStyle,
+                    onEachFeature: function(feature, featureLayer) {
+                        const name =
+                            feature?.properties?.quartier ||
+                            feature?.properties?.name ||
+                            feature?.properties?.nom ||
+                            '';
+                        if (!name) return;
+
+                        polygonIndexByName.set(String(name).trim().toLowerCase(), featureLayer);
+                        featureLayer.on('mouseover', function() {
+                            if (featureLayer !== selectedPolygonLayer) {
+                                featureLayer.setStyle({ fillOpacity: 0.28, weight: 2.5 });
+                            }
+                        });
+                        featureLayer.on('mouseout', function() {
+                            if (featureLayer !== selectedPolygonLayer) {
+                                featureLayer.setStyle(polygonDefaultStyle);
+                            }
+                        });
+                        featureLayer.on('click', async function(e) {
+                            L.DomEvent.stopPropagation(e);
+                            if (addMode) {
+                                const latlng = e.latlng || featureLayer.getBounds().getCenter();
+                                selectedCoords = { lat: latlng.lat, lng: latlng.lng };
+                                if (currentMarker) map.removeLayer(currentMarker);
+                                currentMarker = L.marker([latlng.lat, latlng.lng]).addTo(map);
+                                await openAddModalAt(latlng.lat, latlng.lng);
+                                return;
+                            }
+                            setSelectedPolygon(name);
+                            zoomToQuartier(name, false);
+                            await estimateFromQuartier(name);
+                        });
+                    }
+                });
+                layer.addTo(quartierPolygonLayer);
+                polygonsLoaded = true;
+                quartierLayer.clearLayers();
+            } catch (err) {
+                polygonsLoaded = false;
+                polygonIndexByName.clear();
+                console.warn('GeoJSON quartiers non charge:', err);
+                quartierPolygonLayer.clearLayers();
+                drawQuartiersLayer();
+            }
+        }
+
+        function getQuartierColor(avgPrice) {
+            if (!avgPrice) return '#64748b';
+            if (avgPrice < 900000) return '#16a34a';
+            if (avgPrice < 2200000) return '#f59e0b';
+            return '#dc2626';
+        }
+
+        function drawQuartiersLayer() {
+            if (polygonsLoaded) {
+                quartierLayer.clearLayers();
+                return;
+            }
+            quartierLayer.clearLayers();
+            quartiersStats.forEach(stat => {
+                const color = getQuartierColor(stat.avg_price_m2);
+                const radius = Math.min(22, 8 + stat.count * 1.7);
+
+                const marker = L.circleMarker([stat.center.lat, stat.center.lon], {
+                    pane: 'quartiersPane',
+                    radius,
+                    fillColor: color,
+                    color: '#ffffff',
+                    weight: 2,
+                    opacity: 1,
+                    fillOpacity: 0.85
+                }).addTo(quartierLayer);
+
+                marker.bindPopup(`
+                    <b>${stat.quartier}</b><br>
+                    Biens references: <b>${stat.count}</b><br>
+                    Prix moyen: <b>${stat.avg_price_m2 ? Math.round(stat.avg_price_m2).toLocaleString() + ' Ar/m2' : 'N/A'}</b>
+                `);
+
+                marker.on('click', async (e) => {
+                    L.DomEvent.stopPropagation(e);
+                    if (addMode) {
+                        const latlng = e.latlng || L.latLng(stat.center.lat, stat.center.lon);
+                        selectedCoords = { lat: latlng.lat, lng: latlng.lng };
+                        if (currentMarker) map.removeLayer(currentMarker);
+                        currentMarker = L.marker([latlng.lat, latlng.lng]).addTo(map);
+                        await openAddModalAt(latlng.lat, latlng.lng);
+                        return;
+                    }
+                    zoomToQuartier(stat.quartier, false);
+                    await estimateFromQuartier(stat.quartier);
+                });
+            });
+        }
+
+        function zoomToQuartier(quartier, fromSelect) {
+            const stat = quartiersStats.find(s => s.quartier === quartier);
+            currentQuartierFocus = quartier;
+            setMarkerHighlightByQuartier(quartier);
+            setSelectedPolygon(quartier);
+
+            let moved = false;
+
+            if (stat) {
+                const b = stat.bbox;
+                const southWest = L.latLng(b.south, b.west);
+                const northEast = L.latLng(b.north, b.east);
+                const bounds = L.latLngBounds(southWest, northEast);
+
+                if (b.south === b.north && b.west === b.east) {
+                    map.setView([stat.center.lat, stat.center.lon], 15);
+                } else {
+                    map.fitBounds(bounds.pad(0.45));
+                }
+                moved = true;
+            }
+
+            if (!moved) {
+                const layer = polygonIndexByName.get(String(quartier || '').trim().toLowerCase());
+                if (layer) {
+                    const bounds = layer.getBounds();
+                    if (bounds && bounds.isValid()) {
+                        map.fitBounds(bounds.pad(0.28));
+                        moved = true;
+                    }
+                }
+            }
+
+            if (!moved) {
+                // Dernier fallback: ne pas rester bloqué.
+                map.setView([-18.8792, 47.5079], 13);
+            }
+
+            const select = document.getElementById('map-quartier-select');
+            if (!fromSelect) {
+                select.value = quartier;
+            }
+            document.getElementById('crit-quartier').value = quartier;
+        }
+
+        function setSelectedPolygon(quartier) {
+            if (selectedPolygonLayer) {
+                selectedPolygonLayer.setStyle(polygonDefaultStyle);
+                selectedPolygonLayer = null;
+            }
+            if (!quartier) return;
+
+            const layer = polygonIndexByName.get(String(quartier).trim().toLowerCase());
+            if (!layer) return;
+
+            layer.setStyle(polygonSelectedStyle);
+            layer.bringToFront();
+            selectedPolygonLayer = layer;
+        }
+
+        function setMarkerHighlightByQuartier(quartier) {
+            terrainMarkers.forEach(item => {
+                const isInQuartier = quartier && item.zone === quartier;
+                item.marker.setStyle({
+                    radius: isInQuartier ? 12 : 8,
+                    fillOpacity: isInQuartier ? 0.95 : 0.5,
+                    weight: isInQuartier ? 2 : 1
+                });
+            });
+        }
+
+        function addTerrainMarker(terrain) {
+            const zone = (terrain.quartier || terrain.commune || '').trim();
+            const marker = L.circleMarker([terrain.latitude, terrain.longitude], {
+                pane: 'terrainPointsPane',
+                radius: 8, fillColor: '#e74c3c', color: '#c0392b', weight: 1, opacity: 1, fillOpacity: 0.7
+            }).addTo(terrainLayer);
+
+            marker.bindPopup(`<b>${terrain.quartier || terrain.commune}</b><br>${terrain.type_bien || 'terrain'} | ${terrain.accessibilite}<br><b>${terrain.prix_proprietaire?.toLocaleString()} Ar/m2</b>`);
 
             marker.on('click', (e) => {
                 L.DomEvent.stopPropagation(e);
                 showTerrainExistant(terrain);
             });
+
+            terrainMarkers.push({ marker, zone });
         }
 
         async function onMapClick(e) {
@@ -300,6 +974,11 @@
             if (currentMarker) map.removeLayer(currentMarker);
             currentMarker = L.marker([lat, lng]).addTo(map);
 
+            if (addMode) {
+                await openAddModalAt(lat, lng);
+                return;
+            }
+
             try {
                 const res = await fetch(`/api/terrain/near?lat=${lat}&lon=${lng}&radius=50`);
                 const result = await res.json();
@@ -307,6 +986,42 @@
             } catch (e) {
                 console.error(e);
                 alert('Erreur lors de la recherche');
+            }
+        }
+
+        function closeAddModal() {
+            document.getElementById('add-modal').classList.remove('active');
+            document.getElementById('loader-nouveau-modal').style.display = 'none';
+            if (currentMarker) {
+                map.removeLayer(currentMarker);
+                currentMarker = null;
+            }
+            selectedCoords = null;
+        }
+
+        async function openAddModalAt(lat, lng) {
+            document.getElementById('new-coords-modal').textContent = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+            document.getElementById('add-modal').classList.add('active');
+
+            try {
+                const res = await fetch(`/api/location/enrich?lat=${lat}&lon=${lng}`);
+                const info = await res.json();
+                if (info.success) {
+                    if (info.commune) {
+                        document.getElementById('new-commune-modal').value = info.commune;
+                    }
+                    if (info.quartier) {
+                        document.getElementById('new-quartier-modal').value = info.quartier;
+                    }
+                    if (info.distance_route_nationale !== null && info.distance_route_nationale !== undefined) {
+                        document.getElementById('new-dist-rn-modal').value = info.distance_route_nationale;
+                    }
+                    if (info.distance_route_principale !== null && info.distance_route_principale !== undefined) {
+                        document.getElementById('new-dist-rp-modal').value = info.distance_route_principale;
+                    }
+                }
+            } catch (err) {
+                console.warn('Enrichissement auto indisponible:', err);
             }
         }
 
@@ -322,6 +1037,37 @@
             document.getElementById('result-estimation').style.display = 'none';
         }
 
+        async function estimateFromQuartier(quartier) {
+            const payload = {
+                quartier,
+                commune: quartier,
+                type_bien: document.getElementById('crit-type').value,
+                surface_m2: parseFloat(document.getElementById('crit-surface').value) || null,
+                accessibilite: document.getElementById('crit-access').value,
+                type_papier: document.getElementById('crit-papier').value,
+                is_batissable: true,
+                distance_route_nationale: parseFloat(document.getElementById('crit-dist-rn').value) || null,
+                distance_route_principale: parseFloat(document.getElementById('crit-dist-rp').value) || null,
+                distance_jirama: 120
+            };
+
+            try {
+                const res = await fetch('/api/estimer', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await res.json();
+                if (!result.success) return;
+
+                document.getElementById('prix-criteres-m2').textContent = result.prix_estime_m2.toLocaleString() + ' Ar/m2';
+                document.getElementById('prix-criteres-total').textContent = result.prix_estime_total ? result.prix_estime_total.toLocaleString() + ' Ar' : 'N/A';
+                document.getElementById('result-criteres').style.display = 'block';
+            } catch (err) {
+                console.error('Erreur estimation quartier:', err);
+            }
+        }
+
         function showFormulaireNouveau(lat, lng) {
             document.getElementById('new-coords').textContent = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
             showPanel('panel-nouveau');
@@ -330,14 +1076,18 @@
         function showTerrainExistant(t) {
             currentTerrainId = t.id;
             document.getElementById('details-terrain').innerHTML = `
-                <h4>${t.commune}</h4>
+                <h4>${t.quartier || t.commune}</h4>
+                <div class="detail-row"><span class="detail-label">Commune :</span><span class="detail-value">${t.commune || 'N/A'}</span></div>
+                <div class="detail-row"><span class="detail-label">Type :</span><span class="detail-value">${t.type_bien || 'terrain'}</span></div>
+                <div class="detail-row"><span class="detail-label">Surface :</span><span class="detail-value">${t.surface_m2 ? t.surface_m2.toLocaleString() + ' m2' : 'N/A'}</span></div>
                 <div class="detail-row"><span class="detail-label">Accessibilité :</span><span class="detail-value">${t.accessibilite}</span></div>
                 <div class="detail-row"><span class="detail-label">Bâtissable :</span><span class="detail-value">${t.is_batissable ? 'Oui' : 'Non'}</span></div>
                 <div class="detail-row"><span class="detail-label">Route nationale :</span><span class="detail-value">${t.distance_route_nationale?.toFixed(1) || 'N/A'} m</span></div>
                 <div class="detail-row"><span class="detail-label">Route principale :</span><span class="detail-value">${t.distance_route_principale?.toFixed(1) || 'N/A'} m</span></div>
                 <div class="detail-row"><span class="detail-label">Poteau JIRAMA :</span><span class="detail-value">${t.distance_jirama?.toFixed(1) || 'N/A'} m</span></div>
                 <div class="detail-row"><span class="detail-label">Type de papier :</span><span class="detail-value">${t.type_papier}</span></div>
-                <div class="detail-row"><span class="detail-label">Prix demandé :</span><span class="detail-value prix-proprio">${t.prix_proprietaire?.toLocaleString() || 'N/A'} Ar/m²</span></div>
+                <div class="detail-row"><span class="detail-label">Prix demandé :</span><span class="detail-value prix-proprio">${t.prix_proprietaire?.toLocaleString() || 'N/A'} Ar/m2</span></div>
+                <div class="detail-row"><span class="detail-label">Prix total :</span><span class="detail-value">${t.prix_total?.toLocaleString() || 'N/A'} Ar</span></div>
                 <div class="detail-row"><span class="detail-label">Coordonnées :</span><span class="detail-value">${t.latitude.toFixed(5)}, ${t.longitude.toFixed(5)}</span></div>
             `;
             document.getElementById('result-estimation').style.display = 'none';
@@ -350,6 +1100,9 @@
 
             const data = {
                 commune: document.getElementById('new-commune').value,
+                quartier: document.getElementById('new-quartier').value || null,
+                type_bien: document.getElementById('new-type').value,
+                surface_m2: parseFloat(document.getElementById('new-surface').value) || null,
                 accessibilite: document.getElementById('new-access').value,
                 is_batissable: document.getElementById('new-batissable').checked,
                 distance_route_nationale: parseFloat(document.getElementById('new-dist-rn').value) || null,
@@ -357,6 +1110,7 @@
                 distance_jirama: parseFloat(document.getElementById('new-dist-jir').value) || null,
                 type_papier: document.getElementById('new-papier').value,
                 prix_proprietaire: parseFloat(document.getElementById('new-prix').value),
+                prix_total: parseFloat(document.getElementById('new-prix-total').value) || null,
                 latitude: selectedCoords.lat, longitude: selectedCoords.lng
             };
 
@@ -369,10 +1123,64 @@
                     addTerrainMarker(result.terrain);
                     allTerrains.push(result.terrain);
                     document.getElementById('form-nouveau').reset();
+                    loadQuartiers();
+                    loadQuartiersStats();
                     resetPanel();
                 } else alert('Erreur: ' + result.error);
             } catch (e) { console.error(e); alert('Erreur lors de l\'enregistrement'); }
             finally { document.getElementById('loader-nouveau').style.display = 'none'; }
+        });
+
+        document.getElementById('form-nouveau-modal').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            if (!selectedCoords) return alert('Coordonnées manquantes: recliquez la carte en mode ajout.');
+
+            const data = {
+                commune: document.getElementById('new-commune-modal').value,
+                quartier: document.getElementById('new-quartier-modal').value || null,
+                type_bien: document.getElementById('new-type-modal').value,
+                surface_m2: parseFloat(document.getElementById('new-surface-modal').value) || null,
+                accessibilite: document.getElementById('new-access-modal').value,
+                is_batissable: document.getElementById('new-batissable-modal').checked,
+                distance_route_nationale: parseFloat(document.getElementById('new-dist-rn-modal').value) || null,
+                distance_route_principale: parseFloat(document.getElementById('new-dist-rp-modal').value) || null,
+                distance_jirama: parseFloat(document.getElementById('new-dist-jir-modal').value) || null,
+                type_papier: document.getElementById('new-papier-modal').value,
+                prix_proprietaire: parseFloat(document.getElementById('new-prix-modal').value),
+                prix_total: parseFloat(document.getElementById('new-prix-total-modal').value) || null,
+                latitude: selectedCoords.lat,
+                longitude: selectedCoords.lng
+            };
+
+            document.getElementById('loader-nouveau-modal').style.display = 'block';
+            try {
+                const res = await fetch('/api/terrain', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await res.json();
+                if (result.success) {
+                    addTerrainMarker(result.terrain);
+                    allTerrains.push(result.terrain);
+                    await loadQuartiers();
+                    await loadQuartiersStats();
+                    this.reset();
+                    closeAddModal();
+                    addMode = false;
+                    const btn = document.getElementById('btn-add-mode');
+                    btn.classList.remove('active');
+                    btn.textContent = 'Ajouter un immobilier';
+                    alert('Immobilier enregistré avec succès.');
+                } else {
+                    alert('Erreur: ' + result.error);
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Erreur serveur pendant l\'enregistrement');
+            } finally {
+                document.getElementById('loader-nouveau-modal').style.display = 'none';
+            }
         });
 
         async function estimerPrix() {
@@ -384,12 +1192,41 @@
                 const res = await fetch('/api/estimer', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ terrain_id: currentTerrainId }) });
                 const result = await res.json();
                 if (result.success) {
-                    document.getElementById('prix-estime-value').textContent = result.prix_estime.toLocaleString() + ' Ar/m²';
+                    document.getElementById('prix-estime-value').textContent = result.prix_estime_m2.toLocaleString() + ' Ar/m2';
+                    document.getElementById('prix-estime-total').textContent = result.prix_estime_total ? result.prix_estime_total.toLocaleString() + ' Ar' : 'N/A';
                     document.getElementById('result-estimation').style.display = 'block';
                 } else alert('Erreur: ' + result.error);
             } catch (e) { console.error(e); alert('Erreur lors de l\'estimation'); }
             finally { document.getElementById('loader-estimation').style.display = 'none'; }
         }
+
+        document.getElementById('form-criteres').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const quartier = document.getElementById('crit-quartier').value?.trim() || null;
+            const payload = {
+                quartier: quartier,
+                commune: quartier,
+                type_bien: document.getElementById('crit-type').value,
+                surface_m2: parseFloat(document.getElementById('crit-surface').value) || null,
+                accessibilite: document.getElementById('crit-access').value,
+                type_papier: document.getElementById('crit-papier').value,
+                is_batissable: true,
+                distance_route_nationale: parseFloat(document.getElementById('crit-dist-rn').value) || null,
+                distance_route_principale: parseFloat(document.getElementById('crit-dist-rp').value) || null,
+                distance_jirama: 120
+            };
+
+            try {
+                await estimateFromQuartier(quartier || 'Antananarivo');
+                if (quartier) {
+                    zoomToQuartier(quartier, true);
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Erreur serveur pendant l\'estimation');
+            }
+        });
     </script>
 </body>
 </html>

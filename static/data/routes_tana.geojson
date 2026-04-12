@@ -1,0 +1,112 @@
+{
+  "type": "FeatureCollection",
+  "name": "routes_tana_reference",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "RN2 - Axe Est",
+        "type_route": "nationale"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [47.5075, -18.9100],
+          [47.5400, -18.9000],
+          [47.5850, -18.9050],
+          [47.6400, -18.9150]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "RN3 - Axe Nord",
+        "type_route": "nationale"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [47.4950, -18.8750],
+          [47.4800, -18.8450],
+          [47.4700, -18.8050]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "RN4 - Axe Nord-Ouest",
+        "type_route": "nationale"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [47.5000, -18.8800],
+          [47.4550, -18.8850],
+          [47.4100, -18.9000]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "RN7 - Axe Sud",
+        "type_route": "nationale"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [47.5100, -18.9000],
+          [47.5000, -18.9300],
+          [47.4950, -18.9800]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "By-pass Est",
+        "type_route": "principale"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [47.5450, -18.8500],
+          [47.5700, -18.8850],
+          [47.6000, -18.9300]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Rocade Nord",
+        "type_route": "principale"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [47.4700, -18.8600],
+          [47.5150, -18.8500],
+          [47.5600, -18.8450]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Axe Centre - Ankorondrano",
+        "type_route": "principale"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [47.5070, -18.9070],
+          [47.5120, -18.8950],
+          [47.5170, -18.8850]
+        ]
+      }
+    }
+  ]
+}

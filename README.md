@@ -30,6 +30,11 @@ CREATE EXTENSION postgis;
 #### 1.3 Créer la structure et les données
 Dans pgAdmin, ouvrir le fichier `data/data.sql` et exécuter tout le script.
 
+Puis exécuter la migration/données réelles :
+```powershell
+psql -d map_tana -f data/12-04-26/12-04-2026-Fu.sql
+```
+
 Ou en ligne de commande :
 ```powershell
 psql -d map_tana -f data/data.sql
@@ -99,6 +104,8 @@ Map-Tana/
 - **Cliquer sur un terrain existant** → Voir les détails + Estimer le prix
 - **Cliquer sur une zone vide** → Ajouter un nouveau terrain
 - **Algorithme d'estimation** basé sur : accessibilité, type de papier, bâtissabilité, distances aux infrastructures
+- **Estimation par critères**: quartier + type de bien + surface (m²) + distances
+- **Comparables de marché**: estimation pondérée par biens similaires (données publiques d'annonces)
 
 ## API Endpoints
 

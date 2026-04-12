@@ -1,0 +1,2 @@
+Si vous voulez, je peux faire l’étape suivante: entraîner un vrai modèle de machine learning (scikit-learn) sur vos comparables et remplacer la formule actuelle par une prédiction statistique.
+Je peux aussi ajouter filtres cartographiques avancés (quartier, budget min/max, type, surface) avec liste de résultats style portail immobilier.
